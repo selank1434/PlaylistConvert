@@ -1,0 +1,22 @@
+/* InfoDisplay.css */
+.info-display {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  text-align: center;
+}
+
+.info-display.closed {
+  display: none;
+}
+
+.close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 20px;
+  cursor: pointer;
+}
