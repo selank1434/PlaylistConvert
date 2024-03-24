@@ -28,7 +28,7 @@ const fetchData = async (
     const { data } = response;
 
     setPlaylists(prevPlaylists => [...prevPlaylists, ...data.items]);
-    setOffset(prevOffset => prevOffset + 5);
+    // setOffset(prevOffset => prevOffset + 5);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
