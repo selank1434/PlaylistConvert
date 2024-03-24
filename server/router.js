@@ -120,26 +120,50 @@ app.get('/loginYT',  cors(), function(req, res) {
 
 
 
-
+// const axios = require('axios');
 
 app.get('/callback', cors(), function(req, res) {
-  //OK I am here now what 
-   
-  axios.post('https://accounts.spotify.com/api/token',`code=${req.headers.code}&redirect_uri=${redirect_uri}&grant_type=authorization_code`,{
+  console.log(req.query.code);
+  // console.log(req.query.code);
+  axios.post('https://accounts.spotify.com/api/token', `code=${req.query.code}&redirect_uri=${redirect_uri}&grant_type=authorization_code`, {
     headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' + (new Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString('base64'))
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Basic ' + Buffer.from(`${spotify_client_id}:${spotify_client_secret}`).toString('base64')
     }
   }).then(response => {
     // Handle the successful response
-    res.cookie('access_token', response.data.access_token,{ sameSite: 'None', secure: true });
-    res.cookie('refresh_token', response.data.refresh_token,{ sameSite: 'None', secure: true });
+    res.cookie('access_token', response.data.access_token, { sameSite: 'None', secure: true });
+    res.cookie('refresh_token', response.data.refresh_token, { sameSite: 'None', secure: true });
     // console.log(response.data);
 
     // Send the response
     res.send(response.data);
-  })
+  }).catch(error => {
+    // Handle errors
+    console.error('Error:', error.response.data);
+    res.status(error.response.status).send(error.response.data);
+  });
 });
+
+
+// app.get('/callback', cors(), function(req, res) {
+//   //OK I am here now what 
+   
+//   axios.post('https://accounts.spotify.com/api/token',`code=${req.headers.code}&redirect_uri=${redirect_uri}&grant_type=authorization_code`,{
+//     headers: {
+//       'content-type': 'application/x-www-form-urlencoded',
+//       'Authorization': 'Basic ' + (new Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString('base64'))
+//     }
+//   }).then(response => {
+//     // Handle the successful response
+//     res.cookie('access_token', response.data.access_token,{ sameSite: 'None', secure: true });
+//     res.cookie('refresh_token', response.data.refresh_token,{ sameSite: 'None', secure: true });
+//     // console.log(response.data);
+
+//     // Send the response
+//     res.send(response.data);
+//   })
+// });
 
 
 // app.get('/callbackYT', cors(), function(req, res) {
@@ -170,23 +194,22 @@ app.get('/refresh_token', function(req, res) {
     },
     json: true
   };
-
-  request.post(authOptions, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      var access_token = body.access_token,
-          refresh_token = body.refresh_token;
-      res.send({
-        'access_token': access_token,
-        'refresh_token': refresh_token
-      });
-    }
-  });
+  console.log(authOptions);
+  // request.post(authOptions, function(error, response, body) {
+  //   if (!error && response.statusCode === 200) {
+  //     var access_token = body.access_token,
+  //         refresh_token = body.refresh_token;
+  //     res.send({
+  //       'access_token': access_token,
+  //       'refresh_token': refresh_token
+  //     });
+  //   }
+  // });
 });
 
 
 app.get('/playlists', function(req, res) {
-    // console.log("Auth",req.headers.authorization);
-    // console.log(req.query.limit);
+    console.log("Headers: ",req.headers.authorization);
     const authorizationHeader = {'Authorization': `${req.headers.authorization}`};
     axios.get('https://api.spotify.com/v1/me/playlists', {
       headers: authorizationHeader,  
@@ -197,15 +220,16 @@ app.get('/playlists', function(req, res) {
      }).then(response => {
          // Handle the response data here
          const bruh = []
+         console.log(response);
          res.send(response.data);
      }).catch(error => {
     //     // Handle errors here
+        console.log(error);
     });
 });
 
 app.get('/playlist', function(req, res) {
-  // console.log("Auth",req.headers.authorization);
-  // console.log("NI",req.query.id);
+
   const authorizationHeader = {'Authorization': `${req.headers.authorization}`};
   axios.get(req.query.id, {
     headers: authorizationHeader,  
