@@ -119,6 +119,7 @@ const SpotifyOauthSignIn: React.FC<{
         //This is not an access_token it is a callabckl
         cookies.set("call_back", code);
         setSpotifyCallback(code);
+        //at this point we have the call back 
       }
     };
 

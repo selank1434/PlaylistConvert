@@ -39,20 +39,21 @@ const fetchData = async (
 
 
 
-
-const MyButton = ({setAccessToken}) => {
+//I want the call back no 
+export const AuthenticateSpotify = ({setAccessToken, accessToken}) => {
   const login= async () => {
-    if(window.location.search.length == 0){
+    if(window.location.search.length === 0 && accessToken === ""){
       alert("Need to login first");
     }
     //Now I am going to set up something to callback 
+    //if access token is already defined leave it alone 
+
   const urlSearchParams = new URLSearchParams(window.location.search);
   
   // Extract specific query parameters
   const code = urlSearchParams.get('code');
   const state = urlSearchParams.get('state');
   
-  console.log("This my code: ",code);
   
   const response = await axios.get('http://localhost:3000/callback', {
     headers: {
@@ -64,10 +65,15 @@ const MyButton = ({setAccessToken}) => {
       state: state
     }
   });
+  //within authenticate 
+  //
   console.log("call back access token: ",response.data.access_token);
   cookies.set("access_token",response.data.access_token);
   setAccessToken(response.data.access_token);
-  await fetchData(response.data.access_token);
+  //after this 
+  
+
+  console.log("THis is my access token!!!!, "+ response.data);
   //ok now let me try fetch data here 
   
   //bro wtf is goinh on here 
@@ -82,4 +88,4 @@ const MyButton = ({setAccessToken}) => {
 
 
 
-export default MyButton;
+

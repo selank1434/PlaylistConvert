@@ -84,7 +84,7 @@ const convertMan = async ({playlistItems,setPlaylistsYT, setSearchedSpotifyTrack
             }
           })
             .then(response => {
-              
+              console.log(response.data[0]);
               songUris.push(response.data[0].uri);
             })
             .catch(error => {

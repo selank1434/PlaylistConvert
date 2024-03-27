@@ -10,23 +10,24 @@ const fetchData = async (
   setOffset: React.Dispatch<React.SetStateAction<number>>
 ): Promise<void> => {
   try {
-    if (!accessToken) {
-      console.log("Access token is undefined");
-      return;
-    }
+    //ok here i expect a 
+    const access = cookies.get("access_token");
 
     const response = await axios.get('http://localhost:3000/playlists', {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${access}`,
       },  
       params: {
         limit: 5,
         offset: offset
       },
     });
+    if(response.status !== 200){
+      alert("API FAIL");
+    }
 
     const { data } = response;
-
+    console.log("response ",response.data);
     setPlaylists(prevPlaylists => [...prevPlaylists, ...data.items]);
     // setOffset(prevOffset => prevOffset + 5);
   } catch (error) {
@@ -46,20 +47,19 @@ export const SpotifyPlaylistSelector: React.FC<PlaylistSelectorProps> = ({ selec
 
   useEffect(() => {
     const authToken = cookies.get('access_token');
-    if (authToken && accessToken) {
-      fetchData(accessToken, offset, setPlaylists, setOffset);
-    }
-  }, [accessToken, offset]);
+    console.log("Acess token has changed");
+    console.log("We are inside the data fetch");
+    fetchData(accessToken, offset, setPlaylists, setOffset);
+  }, [accessToken]);
 
   const handlePlaylistChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
     const selectedPlaylist = playlists.find((playlist) => playlist.id === selectedId);
     setSelectedPlaylist(selectedPlaylist);
   };
-
   return (
     <div>
-      {accessToken ? (
+      {true ? (
         <div>
           <h2>Playlists</h2>
           <ul>

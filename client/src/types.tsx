@@ -62,6 +62,10 @@ export interface SpotifyPlaylist {
     snippet: Snippet;
   }
   
+
+
+
+
   export interface PlaylistListResponse {
     kind: 'youtube#playlistListResponse';
     etag: string;
@@ -88,7 +92,7 @@ export interface SpotifyPlaylist {
     };
   }
   
-  interface PlaylistListItem {
+  export interface PlaylistListItem {
     etag: string;
     id: string;
     kind: string;
