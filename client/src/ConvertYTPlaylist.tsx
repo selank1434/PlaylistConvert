@@ -84,6 +84,9 @@ const convertMan = async ({playlistItems,setPlaylistsYT, setSearchedSpotifyTrack
             }
           })
             .then(response => {
+              if(response.data.length === 0){
+                alert("track "+ songTitle + " not found");
+              }
               console.log(response.data[0]);
               songUris.push(response.data[0].uri);
             })
