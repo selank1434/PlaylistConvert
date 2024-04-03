@@ -68,6 +68,7 @@ const generateRandomString = (length) => {
 
 var stateKey = 'spotify_auth_state';
 
+var spotify_access_token = undefined;
 var app = express();
 
 app.use(express.static(__dirname + '/public'))
@@ -118,9 +119,15 @@ app.get('/loginYT',  cors(), function(req, res) {
     res.end();
 });
 
+app.get("/", function(req,res) {
+  res.send("slime");
+});
 
 
-// const axios = require('axios');
+//this part is supposed to be where the magic happens 
+//I have the code and now need to request an access token 
+
+
 
 app.get('/callback', cors(), function(req, res) {
   console.log(req.query.code);
@@ -144,40 +151,6 @@ app.get('/callback', cors(), function(req, res) {
     res.status(error.response.status).send(error.response.data);
   });
 });
-
-
-// app.get('/callback', cors(), function(req, res) {
-//   //OK I am here now what 
-   
-//   axios.post('https://accounts.spotify.com/api/token',`code=${req.headers.code}&redirect_uri=${redirect_uri}&grant_type=authorization_code`,{
-//     headers: {
-//       'content-type': 'application/x-www-form-urlencoded',
-//       'Authorization': 'Basic ' + (new Buffer.from(spotify_client_id + ':' + spotify_client_secret).toString('base64'))
-//     }
-//   }).then(response => {
-//     // Handle the successful response
-//     res.cookie('access_token', response.data.access_token,{ sameSite: 'None', secure: true });
-//     res.cookie('refresh_token', response.data.refresh_token,{ sameSite: 'None', secure: true });
-//     // console.log(response.data);
-
-//     // Send the response
-//     res.send(response.data);
-//   })
-// });
-
-
-// app.get('/callbackYT', cors(), function(req, res) {
-//   console.log("DRAKE",req.headers.code);
-//   if (req.url.startsWith('/callback')) {
-//     // Handle the OAuth 2.0 server response
-     
-//     // Get access and refresh tokens (if access_type is offline)
-//     let { tokens } = oauth2Client.getToken(req.headers.code);
-//     oauth2Client.setCredentials(tokens);
-//     res.send(tokens);
-//   }
-    
-// });
 
 app.get('/refresh_token', function(req, res) {
 
@@ -207,26 +180,27 @@ app.get('/refresh_token', function(req, res) {
   // });
 });
 
-
+//this is for spotify playlists 
 app.get('/playlists', function(req, res) {
-    console.log("Headers: ",req.headers.authorization);
-    const authorizationHeader = {'Authorization': `${req.headers.authorization}`};
-    axios.get('https://api.spotify.com/v1/me/playlists', {
-      headers: authorizationHeader,  
-        params: {
-          limit: req.query.limit,
-          offset: req.query.offset
-        }    
-     }).then(response => {
-         // Handle the response data here
-         const bruh = []
-         console.log(response);
-         res.send(response.data);
-     }).catch(error => {
-    //     // Handle errors here
-        console.log(error);
-    });
+  console.log("Headers: ",req.headers.authorization);
+  const authorizationHeader = {'Authorization': `${req.headers.authorization}`};
+  axios.get('https://api.spotify.com/v1/me/playlists', {
+    headers: authorizationHeader,  
+      params: {
+        limit: req.query.limit,
+        offset: req.query.offset
+      }    
+   }).then(response => {
+       // Handle the response data here
+       const bruh = []
+       console.log(response);
+       res.send(response.data);
+   }).catch(error => {
+  //     // Handle errors here
+      console.log(error);
+  });
 });
+
 
 app.get('/playlist', function(req, res) {
 
