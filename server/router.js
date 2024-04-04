@@ -76,23 +76,8 @@ app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 app.use(express.json());
 app.get('/login',  cors(), function(req, res) {
-  
+  console.log("MADE IT IN HERE BABY");
   var state = generateRandomString(16);
-  res.cookie(stateKey, state);
-
-  // your application requests authorization
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
-  res.header('Access-Control-Allow-Methods', 'GET'); // Adjust based on your requirements
-  res.header('Access-Control-Allow-Headers', 'Content-Type'); // Adjust based on your requirements
-  var scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
-  res.redirect('https://accounts.spotify.com/authorize?' +
-    querystring.stringify({
-      response_type: 'code',
-      client_id: spotify_client_id,
-      scope: scope,
-      redirect_uri: redirect_uri,
-      state: state
-    }));
 });
 
 
@@ -132,24 +117,31 @@ app.get("/", function(req,res) {
 app.get('/callback', cors(), function(req, res) {
   console.log(req.query.code);
   // console.log(req.query.code);
-  axios.post('https://accounts.spotify.com/api/token', `code=${req.query.code}&redirect_uri=${redirect_uri}&grant_type=authorization_code`, {
+  var redirect_test = encodeURI('http://localhost:300/callback');
+  console.log(redirect_test);
+  axios.post('https://accounts.spotify.com/api/token', 
+  querystring.stringify({
+    code: req.query.code,
+    redirect_uri: redirect_uri, // Using the hardcoded redirect URI
+    grant_type: 'authorization_code'
+  }), 
+  {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': 'Basic ' + Buffer.from(`${spotify_client_id}:${spotify_client_secret}`).toString('base64')
     }
-  }).then(response => {
-    // Handle the successful response
-    res.cookie('access_token', response.data.access_token, { sameSite: 'None', secure: true });
-    res.cookie('refresh_token', response.data.refresh_token, { sameSite: 'None', secure: true });
-    // console.log(response.data);
+  }
+).then(response => {
+  // Handle the successful response
+  res.cookie('access_token', response.data.access_token, { sameSite: 'None', secure: true });
+  res.cookie('refresh_token', response.data.refresh_token, { sameSite: 'None', secure: true });
+  res.send(response.data); // Send the response
+}).catch(error => {
+  // Handle errors
+  console.error('Error:', error.response.data);
+  res.status(error.response.status).send(error.response.data);
+});
 
-    // Send the response
-    res.send(response.data);
-  }).catch(error => {
-    // Handle errors
-    console.error('Error:', error.response.data);
-    res.status(error.response.status).send(error.response.data);
-  });
 });
 
 app.get('/refresh_token', function(req, res) {

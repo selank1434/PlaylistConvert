@@ -1,13 +1,21 @@
 import axios from "axios";
 import { PlaylistItem, PlaylistItemListResponse } from "./types";
 import { cookies } from "./App";
+import { response } from "express";
 interface ConversionProps {
     playlistItems: PlaylistItemListResponse| undefined;
     setPlaylistsYT: React.Dispatch<React.SetStateAction<PlaylistItemListResponse | undefined>>;
     setSearchedSpotifyTracks: React.Dispatch<React.SetStateAction<string[]>>;
     selectedPlaylistYT: PlaylistItem | undefined;
   }
-
+  // const bearer_cookie = cookies.get("access_token_yt");
+/**
+ * Extracts the song title from a given string containing the title and artist separated by a hyphen.
+ * If no hyphen is found, returns the input string trimmed.
+ * 
+ * @param {string} title - The string containing the title and artist separated by a hyphen.
+ * @returns {Promise<string>} - The extracted song title or the trimmed input string if no hyphen is found.
+ */
 const extractSongTitle= async (title: string) => {
     const hyphenIndex = title.indexOf('-');
     if (hyphenIndex !== -1) {
@@ -25,25 +33,31 @@ const extractSongTitle= async (title: string) => {
         return title.trim();
     }
 }
-//I calll this to set my playlist based on what I select 
-const createPlaylist= async (playlistName: string) : Promise<string> => {
-  const bearer_cookie = cookies.get("access_token");
+/**
+ * This method will create a spotify playlist that 
+ * 
+ * @param {string} playlistName - The string containing the title of my new playlist
+ * @param {string} access_token - This is the spotify api token we have stored in state
+ * @returns {Promise<string>} - The spotify playlist id of my new playlists
+ */
+
+const createPlaylist= async (playlistName: string, access_token: String) : Promise<string> => {
   const resp = await axios.get("http://localhost:3000/createSpotifyPlaylist", {
       headers: {
-          Authorization: bearer_cookie, // Assuming bearer_cookie is the token
+          Authorization: `${access_token}` // Assuming bearer_cookie is the token
         },  
         params: {
             playlistName: playlistName
             // Add more parameters if needed
         },
   })
-
+  console.log(resp);
   return resp.data.id;
 }   
 
-const appendToPlaylist = async(playlistURIs: string [], playlistId: string) => {
+const appendToPlaylist = async(playlistURIs: string [], playlistId: string, access_token: String) => {
 
-    const bearer_cookie = cookies.get("access_token");
+    const bearer_cookie = `${access_token}`;
     const apiUrl = "http://localhost:3000/appendToPlaylistSpotify";
     const resp = await axios.post(apiUrl, { data: playlistURIs }, {
       headers: {
@@ -65,11 +79,13 @@ const convertMan = async ({playlistItems,setPlaylistsYT, setSearchedSpotifyTrack
     if (playlistItems === undefined){
       return;
     }
+    const access_token = cookies.get("access_token");
     await Promise.all(
     playlistItems.items.map(async (item) => {
         const songTitle = item.snippet.title;
         //Ok I am going to search for shit 
-        const bearer_cookie = cookies.get("access_token");
+        // const bearer_cookie = cookies.get("access_token");
+        const bearer_cookie = `Bearer ${access_token}`;
          // Replace with the desired track name
         const trackName = await extractSongTitle(songTitle);
         const params = {
@@ -80,7 +96,7 @@ const convertMan = async ({playlistItems,setPlaylistsYT, setSearchedSpotifyTrack
           await axios.get(apiUrl, {
             params: params,
             headers: {
-              'Authorization': bearer_cookie
+              'Authorization': access_token
             }
           })
             .then(response => {
@@ -115,9 +131,10 @@ const convertMan = async ({playlistItems,setPlaylistsYT, setSearchedSpotifyTrack
     if (selectedPlaylistYT === undefined){
       return;
     }
-  
-    const x = await createPlaylist(selectedPlaylistYT.snippet.title);
-    const y = await appendToPlaylist(songUris,x);
+    console.log("Called convert man");
+    const x = await createPlaylist(selectedPlaylistYT.snippet.title,access_token);
+    const y = await appendToPlaylist(songUris,x,access_token);
+    console.log(y);
     //let us see if this work
 
 }  

@@ -17,7 +17,6 @@ import SpotifyOauthSignIn from './SpotifyLogin';
 export const cookies = new Cookies();
 
 function App() {
-
   const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyPlaylist| undefined>(undefined);
   const [selectedPlaylistYT, setSelectedPlaylistYT] = useState<PlaylistItem| undefined>(undefined);
   const [playlistsYT, setPlaylistsYT] = useState<PlaylistItem[]>([]);
@@ -25,7 +24,8 @@ function App() {
   const [searchedSpotifyTracks,setSearchedSpotifyTracks] = useState<string[]>([]);
   const [spotifyCallBack, setSpotifyCallback] = useState("");
   //ok this is the access_token for the spotify api 
-  console.log();
+  const [spotifyCookieSet, setSpotifyCookie] = useState(false);
+  
   const [access_token, setAccessToken] = useState("");
   const [modalOpen, setModalOpen] = useState(true);
   const handleCloseModal = () => {
@@ -36,11 +36,11 @@ function App() {
     <div className="App">
       <header className="App-header">
         <SpotifyOauthSignIn spotifyCallBack={spotifyCallBack} setSpotifyCallback={setSpotifyCallback} />
-        <AuthenticateSpotify setAccessToken={setAccessToken} accessToken={access_token}/>
+        <AuthenticateSpotify setAccessToken={setAccessToken} accessToken={access_token} setSpotifyCookie={setSpotifyCookie}/>
         <SpotifyPlaylistSelector
           selectedPlaylist={selectedPlaylist}
           setSelectedPlaylist={setSelectedPlaylist}
-          accessToken={access_token}
+          spotifyCookieSet={spotifyCookieSet}
         />
         <YoutubeOauthSignIn/>
         <YTDropDown

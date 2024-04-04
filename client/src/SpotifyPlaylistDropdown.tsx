@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { cookies } from './App';
 import { SpotifyPlaylist } from './types';
 
-const fetchData = async (
+export const fetchData = async (
   accessToken: string | undefined,
   offset: number, 
   setPlaylists: React.Dispatch<React.SetStateAction<SpotifyPlaylist[]>>,
@@ -11,7 +11,7 @@ const fetchData = async (
 ): Promise<void> => {
   try {
     //ok here i expect a 
-    if(accessToken === undefined){
+    if(accessToken === ""){
       return;
     }
     const response = await axios.get('http://localhost:3000/playlists', {
@@ -20,7 +20,7 @@ const fetchData = async (
       },  
       params: {
         limit: 5,
-        offset: offset
+        offset: 0
       },
     });
     if(response.status !== 200){
@@ -40,16 +40,16 @@ const fetchData = async (
 interface PlaylistSelectorProps {
   selectedPlaylist: SpotifyPlaylist | undefined;
   setSelectedPlaylist: React.Dispatch<React.SetStateAction<SpotifyPlaylist | undefined>>;
-  accessToken: string;
+  spotifyCookieSet: boolean;
 }
 
-export const SpotifyPlaylistSelector: React.FC<PlaylistSelectorProps> = ({ selectedPlaylist, setSelectedPlaylist, accessToken })  => {
+export const SpotifyPlaylistSelector: React.FC<PlaylistSelectorProps> = ({ selectedPlaylist, setSelectedPlaylist,spotifyCookieSet })  => {
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    fetchData(accessToken, offset, setPlaylists, setOffset);
-  }, [accessToken]);
+    fetchData(cookies.get("access_token"), 0, setPlaylists, setOffset);
+  }, [spotifyCookieSet]);
 
   const handlePlaylistChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
@@ -58,7 +58,7 @@ export const SpotifyPlaylistSelector: React.FC<PlaylistSelectorProps> = ({ selec
   };
   return (
     <div>
-      {accessToken !== undefined ? (
+      {true ? (
         <div>
           <h2>Playlists</h2>
           <ul>
