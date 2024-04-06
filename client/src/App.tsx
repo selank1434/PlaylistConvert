@@ -16,8 +16,17 @@ import SpotifyOauthSignIn from './SpotifyLogin';
 
 export const cookies = new Cookies();
 
+
+
+
+
 function App() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyPlaylist| undefined>(undefined);
+
+  const [loggedIn,setLoggedIn] = useState<boolean>(false);
+
+
+
   const [selectedPlaylistYT, setSelectedPlaylistYT] = useState<PlaylistItem| undefined>(undefined);
   const [playlistsYT, setPlaylistsYT] = useState<PlaylistItem[]>([]);
   const [selectedPlaylistTracks,setSelectedPlaylistTracks] = useState<PlaylistItemListResponse| undefined>(undefined);
@@ -35,14 +44,14 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <SpotifyOauthSignIn spotifyCallBack={spotifyCallBack} setSpotifyCallback={setSpotifyCallback} />
-        <AuthenticateSpotify setAccessToken={setAccessToken} accessToken={access_token} setSpotifyCookie={setSpotifyCookie}/>
+        <SpotifyOauthSignIn loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
+        <AuthenticateSpotify setPlaylists={setSelectedPlaylist}/>
         <SpotifyPlaylistSelector
           selectedPlaylist={selectedPlaylist}
           setSelectedPlaylist={setSelectedPlaylist}
-          spotifyCookieSet={spotifyCookieSet}
+          loggedIn={loggedIn}
         />
-        <YoutubeOauthSignIn/>
+        {/* <YoutubeOauthSignIn/>
         <YTDropDown
           selectedPlaylist={selectedPlaylistYT}
           setSelectedPlaylist={setSelectedPlaylistYT}
@@ -56,7 +65,7 @@ function App() {
           setPlaylistsYT={setSelectedPlaylistTracks} 
           setSearchedSpotifyTracks={setSearchedSpotifyTracks} 
           selectedPlaylistYT={selectedPlaylistYT}
-        />
+        /> */}
       </header>
     </div>
   );

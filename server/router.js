@@ -25,9 +25,12 @@ var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var axios = require('axios');
+const session = require('express-session');
+const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
+//I need a variable that goes to
+var bearer_token = "";
 
-
-var redirect_uri = 'http://localhost:3001/callback'; // Your redirect uri
+var redirect_uri = 'http://localhost:3000/callback'; // Your redirect uri
 
 //get a specific playlist that I want to 
 const {google} = require('googleapis');
@@ -76,8 +79,9 @@ app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 app.use(express.json());
 app.get('/login',  cors(), function(req, res) {
-  console.log("MADE IT IN HERE BABY");
-  var state = generateRandomString(16);
+  const state = generateRandomString(16); // You need to define this function
+  const authorizationUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${spotify_client_id}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirect_uri)}`;
+  res.redirect(authorizationUrl);
 });
 
 
@@ -115,9 +119,10 @@ app.get("/", function(req,res) {
 
 
 app.get('/callback', cors(), function(req, res) {
+  console.log("calling back");
   console.log(req.query.code);
   // console.log(req.query.code);
-  var redirect_test = encodeURI('http://localhost:300/callback');
+  var redirect_test = encodeURI('http://localhost:3000/callback');
   console.log(redirect_test);
   axios.post('https://accounts.spotify.com/api/token', 
   querystring.stringify({
@@ -133,9 +138,9 @@ app.get('/callback', cors(), function(req, res) {
   }
 ).then(response => {
   // Handle the successful response
-  res.cookie('access_token', response.data.access_token, { sameSite: 'None', secure: true });
+  bearer_token = response.data.access_token;
   res.cookie('refresh_token', response.data.refresh_token, { sameSite: 'None', secure: true });
-  res.send(response.data); // Send the response
+  res.redirect("http://localhost:3001");
 }).catch(error => {
   // Handle errors
   console.error('Error:', error.response.data);
@@ -172,26 +177,46 @@ app.get('/refresh_token', function(req, res) {
   // });
 });
 
-//this is for spotify playlists 
-app.get('/playlists', function(req, res) {
-  console.log("Headers: ",req.headers.authorization);
-  const authorizationHeader = {'Authorization': `${req.headers.authorization}`};
+//this is for spotify playlists
+app.get('/getSpotifyPlaylists', function(req, res) {
+  // Check if the bearer token is present
+  if (!bearer_token) {
+    res.status(401).send("Login first, please");
+    return;
+  }
+
+  // Make the request to Spotify API
   axios.get('https://api.spotify.com/v1/me/playlists', {
-    headers: authorizationHeader,  
-      params: {
-        limit: req.query.limit,
-        offset: req.query.offset
-      }    
-   }).then(response => {
-       // Handle the response data here
-       const bruh = []
-       console.log(response);
-       res.send(response.data);
-   }).catch(error => {
-  //     // Handle errors here
-      console.log(error);
+    headers: {
+      Authorization: 'Bearer ' + bearer_token
+    },
+    params: {
+      limit: req.query.limit || 20, // Default limit to 20 if not provided
+      offset: req.query.offset || 0 // Default offset to 0 if not provided
+    }
+  })
+  .then(response => {
+    // Handle successful response
+    const playlistsData = response.data;
+    const playlists = playlistsData.items; // Extract playlists from response
+    const responseData = {
+      href: playlistsData.href,
+      limit: playlistsData.limit,
+      next: playlistsData.next,
+      offset: playlistsData.offset,
+      previous: playlistsData.previous,
+      total: playlistsData.total,
+      items: playlists
+    };
+    res.send(responseData);
+  })
+  .catch(error => {
+    // Handle errors
+    console.error(error.response.data);
+    res.status(error.response.status || 500).send("An error occurred while fetching playlists");
   });
 });
+
 
 
 app.get('/playlist', function(req, res) {
