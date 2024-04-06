@@ -180,7 +180,8 @@ app.get('/refresh_token', function(req, res) {
 //this is for spotify playlists
 app.get('/getSpotifyPlaylists', function(req, res) {
   // Check if the bearer token is present
-  if (!bearer_token) {
+  console.log("This is my bearer token: ", bearer_token);
+  if (bearer_token === "") {
     res.status(401).send("Login first, please");
     return;
   }
@@ -199,16 +200,7 @@ app.get('/getSpotifyPlaylists', function(req, res) {
     // Handle successful response
     const playlistsData = response.data;
     const playlists = playlistsData.items; // Extract playlists from response
-    const responseData = {
-      href: playlistsData.href,
-      limit: playlistsData.limit,
-      next: playlistsData.next,
-      offset: playlistsData.offset,
-      previous: playlistsData.previous,
-      total: playlistsData.total,
-      items: playlists
-    };
-    res.send(responseData);
+    res.send(playlists);
   })
   .catch(error => {
     // Handle errors
@@ -216,6 +208,39 @@ app.get('/getSpotifyPlaylists', function(req, res) {
     res.status(error.response.status || 500).send("An error occurred while fetching playlists");
   });
 });
+
+//this is 
+app.get('/getSpotifyPlaylist', function(req, res) {
+  // Check if the bearer token is present
+  console.log("This is my bearer token: ", bearer_token);
+  if (bearer_token === "") {
+    res.status(401).send("Login first, please");
+    return;
+  }
+
+  // Make the request to Spotify API
+  axios.get('https://api.spotify.com/v1/me/playlists', {
+    headers: {
+      Authorization: 'Bearer ' + bearer_token
+    },
+    params: {
+      limit: req.query.limit || 20, // Default limit to 20 if not provided
+      offset: req.query.offset || 0 // Default offset to 0 if not provided
+    }
+  })
+  .then(response => {
+    // Handle successful response
+    const playlistsData = response.data;
+    const playlists = playlistsData.items; // Extract playlists from response
+    res.send(playlists);
+  })
+  .catch(error => {
+    // Handle errors
+    console.error(error.response.data);
+    res.status(error.response.status || 500).send("An error occurred while fetching playlists");
+  });
+});
+
 
 
 

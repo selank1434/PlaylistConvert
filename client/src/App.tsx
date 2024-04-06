@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import Cookies from 'universal-cookie';
 import './App.css';
-import { AuthenticateSpotify } from './AuthenticateSpotify';
+import { FetchSpotifyPlaylistsButton } from './FetchSpotifyPlaylistsButton';
 import SpotifyPlaylistSelector from './SpotifyPlaylistDropdown';
 import { useCookies } from 'react-cookie';
 import { PlaylistItem, PlaylistItemListResponse, SpotifyPlaylist } from './types';
-import SpotifySubmitPlaylist from './SpotifySubmitPlaylist';
 import YoutubeOauthSignIn from './YoutubeOauthSignIn ';
 import YTDropDown from './ytdropdown';
 import YTSubmitPlaylist from './SubmitYoutube';
@@ -21,16 +20,18 @@ export const cookies = new Cookies();
 
 
 function App() {
-  const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyPlaylist| undefined>(undefined);
 
-  const [loggedIn,setLoggedIn] = useState<boolean>(false);
+
+  const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyPlaylist| undefined>(undefined);
+  const [spotifyPlaylists, setSpotifyPlaylists] = useState<SpotifyPlaylist[]|undefined>(undefined)
+  const [spotifyLoggedIn,setSpotifyLoggedIn] = useState<boolean>(false);
 
 
 
   const [selectedPlaylistYT, setSelectedPlaylistYT] = useState<PlaylistItem| undefined>(undefined);
   const [playlistsYT, setPlaylistsYT] = useState<PlaylistItem[]>([]);
   const [selectedPlaylistTracks,setSelectedPlaylistTracks] = useState<PlaylistItemListResponse| undefined>(undefined);
-  const [searchedSpotifyTracks,setSearchedSpotifyTracks] = useState<string[]>([]);
+
   const [spotifyCallBack, setSpotifyCallback] = useState("");
   //ok this is the access_token for the spotify api 
   const [spotifyCookieSet, setSpotifyCookie] = useState(false);
@@ -44,13 +45,15 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <SpotifyOauthSignIn loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
-        <AuthenticateSpotify setPlaylists={setSelectedPlaylist}/>
+        <SpotifyOauthSignIn spotifyLoggedIn={spotifyLoggedIn} setSpotifyLoggedIn={setSpotifyLoggedIn}/>
+        <FetchSpotifyPlaylistsButton setSpotifyPlaylists={setSpotifyPlaylists} />
         <SpotifyPlaylistSelector
+          spotifyPlaylists={spotifyPlaylists}
+          setSpotifyPlaylists={setSpotifyPlaylists}
           selectedPlaylist={selectedPlaylist}
           setSelectedPlaylist={setSelectedPlaylist}
-          loggedIn={loggedIn}
         />
+        <button onClick={() => alert(spotifyPlaylists)}>click me bro</button>
         {/* <YoutubeOauthSignIn/>
         <YTDropDown
           selectedPlaylist={selectedPlaylistYT}
